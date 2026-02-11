@@ -1,0 +1,59 @@
+﻿@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    bool isLobby = controller == "Lobby";
+    bool isGame = controller == "Game";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] - TicTacToe</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+
+<body class="@(isLobby ? "lobby-page" : "") @(isGame ? "game-page" : "")">
+
+    @if (!isLobby && !isGame)
+    {
+        <header>
+            <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
+                <div class="container-fluid">
+                    <a class="navbar-brand" asp-controller="Home" asp-action="Index">TicTacToe</a>
+                    <div class="navbar-nav">
+                        <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
+                        <a class="nav-link" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                    </div>
+                </div>
+            </nav>
+        </header>
+    }
+
+    @if (isLobby || isGame)
+    {
+        <main>
+            @RenderBody()
+        </main>
+    }
+    else
+    {
+        <div class="container">
+            <main>
+                @RenderBody()
+            </main>
+        </div>
+    }
+
+    @if (!isLobby && !isGame)
+    {
+        <footer class="border-top footer text-muted">
+            <div class="container">
+                &copy; 2026 - TicTacToe
+            </div>
+        </footer>
+    }
+
+</body>
+</html>

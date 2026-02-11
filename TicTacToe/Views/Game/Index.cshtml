@@ -1,0 +1,36 @@
+﻿@{
+    ViewData["Title"] = "Game";
+}
+
+<div class="game-body">
+
+    <div class="game-container">
+
+        <div class="game-info">
+            <h2>Tic Tac Toe</h2>
+            <p><b>You:</b> @ViewBag.PlayerName</p>
+            <p><b>Game ID:</b> @ViewBag.GameId</p>
+            <div id="status">Waiting for opponent...</div>
+        </div>
+
+        <div id="board" class="board">
+            @for (int i = 0; i < 9; i++)
+            {
+                <button type="button"
+                        class="cell"
+                        data-index="@i">
+                </button>
+            }
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    const GAME_ID = "@ViewBag.GameId";
+    const PLAYER_NAME = "@ViewBag.PlayerName";
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr/dist/browser/signalr.min.js"></script>
+<script src="/js/game.js"></script>

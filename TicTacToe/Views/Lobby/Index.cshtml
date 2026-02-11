@@ -1,0 +1,45 @@
+﻿@model List<TicTacToe.Models.Game>
+
+@{
+    ViewData["Title"] = "Lobby";
+}
+
+<div class="lobby-card">
+
+    <h1 class="lobby-title">🎮 Game Lobby</h1>
+
+    <form asp-action="Create" method="post">
+        <button type="submit" class="main-btn">
+            🚀 Start New Game
+        </button>
+    </form>
+
+    <div class="games-list">
+
+        @if (!Model.Any())
+        {
+            <p class="no-game">No active games yet</p>
+        }
+        else
+        {
+            @foreach (var game in Model)
+            {
+                <div class="game-item">
+
+                    <span class="player-name">
+                        👤 @game.PlayerX.Name
+                    </span>
+
+                    <form asp-action="Join" method="post">
+                        <input type="hidden" name="gameId" value="@game.Id" />
+                        <button type="submit" class="join-btn">
+                            Join Game
+                        </button>
+                    </form>
+
+                </div>
+            }
+        }
+    </div>
+
+</div>
