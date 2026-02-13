@@ -1,3 +1,6 @@
+⚠️ IMPORTANT
+Please open the application using two different browsers (for example: Chrome and Edge) to properly test real-time multiplayer functionality.
+
 🎮 Real-Time Multiplayer Tic Tac Toe (ASP.NET Core MVC)
 
 A clean and practical real-time Tic Tac Toe game built with ASP.NET Core MVC, SignalR, and Entity Framework Core, designed to demonstrate multiplayer game logic and real-time communication.
