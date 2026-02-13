@@ -1,0 +1,65 @@
+﻿@model List<TicTacToe.Models.Player>
+
+@{
+    ViewData["Title"] = "Leaderboard";
+}
+
+<div class="leaderboard-container">
+    <h2>🏆 Top Players</h2>
+
+    <table class="leaderboard-table">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Name</th>
+                <th>Wins</th>
+                <th>Losses</th>
+                <th>Draws</th>
+                <th>Total</th>
+                <th>Win Rate</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int rank = 1;
+            }
+
+            @foreach (var player in Model)
+            {
+                var winRate = player.TotalGames == 0
+                ? 0
+                : (player.Wins * 100 / player.TotalGames);
+
+                <tr>
+                    <td>
+                        @if (rank == 1)
+                        {
+                            <span class="medal gold">🥇</span>
+                        }
+                        else if (rank == 2)
+                        {
+                            <span class="medal silver">🥈</span>
+                        }
+                        else if (rank == 3)
+                        {
+                            <span class="medal bronze">🥉</span>
+                        }
+                        else
+                        {
+                            @rank
+                        }
+                    </td>
+
+                    <td>@player.Name</td>
+                    <td>@player.Wins</td>
+                    <td>@player.Losses</td>
+                    <td>@player.Draws</td>
+                    <td>@player.TotalGames</td>
+                    <td>@winRate %</td>
+                </tr>
+
+                rank++;
+            }
+        </tbody>
+    </table>
+</div>

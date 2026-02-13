@@ -11,44 +11,57 @@ public class GameHub : Hub
         _gameService = gameService;
     }
 
+    // Add connection to game group
     public async Task JoinGame(string gameId)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
 
         var game = _gameService.GetGame(Guid.Parse(gameId));
 
+        // Notify all players that game started
         await Clients.Group(gameId)
             .SendAsync("GameStarted", game.CurrentTurn);
     }
 
+    // Handle move from client
     public async Task MakeMove(string gameId, int index, string playerName)
     {
+        var parsedGameId = Guid.Parse(gameId);
+
         var game = _gameService.MakeMove(
-            Guid.Parse(gameId),
-            index,
-            playerName
+        parsedGameId,
+        index,
+        playerName
         );
 
         var board = game.Board;
 
         var winCombo = CheckWinner(board);
 
+        // IMPORTANT: If winner detected → finish game
         if (winCombo != null)
         {
-            game.IsFinished = true;
+            _gameService.FinishGame(parsedGameId, playerName);
+
+            var updatedGame = _gameService.GetGame(parsedGameId);
 
             await Clients.Group(gameId)
-                .SendAsync("GameOver",
-                    board,
-                    winCombo,
-                    playerName);
+            .SendAsync("GameOver",
+                 board,
+                 winCombo,
+                 playerName,
+                  updatedGame.PlayerX.Name,
+                 updatedGame.PlayerO.Name,
+                 updatedGame.PlayerXScore,
+                 updatedGame.PlayerOScore);
 
             return;
         }
 
+        // IMPORTANT: If board full → draw
         if (board.All(x => x != null))
         {
-            game.IsFinished = true;
+            _gameService.FinishDraw(parsedGameId);
 
             await Clients.Group(gameId)
                 .SendAsync("GameDraw", board);
@@ -56,12 +69,27 @@ public class GameHub : Hub
             return;
         }
 
+        // Notify players about move and next turn
         await Clients.Group(gameId)
             .SendAsync("MoveMade",
                 board,
                 game.CurrentTurn);
     }
 
+    // Restart existing game
+    public async Task RestartGame(string gameId)
+    {
+        var parsedGameId = Guid.Parse(gameId);
+
+        var game = _gameService.ResetGame(parsedGameId);
+
+        await Clients.Group(gameId)
+            .SendAsync("GameRestarted",
+                game.Board,
+                game.CurrentTurn);
+    }
+
+    // NOTE: Returns winning combination indexes if found
     private int[]? CheckWinner(string?[] board)
     {
         int[][] combos =
@@ -82,6 +110,7 @@ public class GameHub : Hub
             var b = combo[1];
             var c = combo[2];
 
+            // IMPORTANT: All three cells must match and not be null
             if (board[a] != null &&
                 board[a] == board[b] &&
                 board[a] == board[c])

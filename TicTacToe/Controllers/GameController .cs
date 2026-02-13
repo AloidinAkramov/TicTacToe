@@ -4,17 +4,12 @@ using TicTacToe.Services;
 namespace TicTacToe.Controllers;
 public class GameController : Controller
 {
-    private readonly IGameService _gameService;
-
-    public GameController(IGameService gameService)
-    {
-        _gameService = gameService;
-    }
-
+    // Load game page
     public IActionResult Index(Guid gameId)
     {
         var playerName = HttpContext.Session.GetString("PlayerName");
 
+        // IMPORTANT: Player must exist in session
         if (string.IsNullOrEmpty(playerName))
             return RedirectToAction("Index", "Home");
 

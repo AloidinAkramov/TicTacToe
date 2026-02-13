@@ -1,4 +1,6 @@
-﻿namespace TicTacToe.Models;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+
+namespace TicTacToe.Models;
 public class Game
 {
     public Guid Id { get; set; }
@@ -12,5 +14,9 @@ public class Game
     public string CurrentTurn { get; set; }
     public bool IsFinished { get; set; }
 
+    public int PlayerXScore { get; set; } = 0;
+    public int PlayerOScore { get; set; } = 0;
+
     public DateTime CreatedAt { get; set; }
+
 }

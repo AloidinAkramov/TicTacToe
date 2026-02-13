@@ -9,7 +9,12 @@
         <div class="game-info">
             <h2>Tic Tac Toe</h2>
             <p><b>You:</b> @ViewBag.PlayerName</p>
-            <p><b>Game ID:</b> @ViewBag.GameId</p>
+            <div class="score-board">
+                <span id="playerXScore">0</span>
+                -
+                <span id="playerOScore">0</span>
+            </div>
+
             <div id="status">Waiting for opponent...</div>
         </div>
 
