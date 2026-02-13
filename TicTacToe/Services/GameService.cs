@@ -12,11 +12,10 @@ public class GameService : IGameService
         _context = context;
     }
 
+    // Create new game and assign PlayerX
     public Game CreateGame(string playerName)
     {
         var player = GetOrCreatePlayer(playerName);
-
-        var emptyBoard = new string?[9];
 
         var game = new Game
         {
@@ -34,10 +33,12 @@ public class GameService : IGameService
         return game;
     }
 
+    // Join game as PlayerO
     public Game JoinGame(Guid gameId, string playerName)
     {
         var game = GetGame(gameId);
 
+        // IMPORTANT: Prevent more than two players
         if (game.PlayerOId != null)
             throw new Exception("This game already has two players.");
 
@@ -49,25 +50,30 @@ public class GameService : IGameService
         return game;
     }
 
+    // Make move on board
     public Game MakeMove(Guid gameId, int index, string playerName)
     {
         var game = GetGame(gameId);
 
+        // IMPORTANT: Block move if game is finished
         if (game.IsFinished)
             throw new Exception("Game is already finished.");
 
-
+        // IMPORTANT: Wait until second player joins
         if (game.PlayerO == null)
             throw new Exception("Waiting for second player.");
 
+        // IMPORTANT: Enforce turn order
         if (game.CurrentTurn != playerName)
             throw new Exception("It is not your turn.");
 
         var board = game.Board;
 
+        // IMPORTANT: Prevent overwriting cell
         if (board[index] != null)
             throw new Exception("This cell is already taken.");
 
+        // Assign symbol
         board[index] = playerName == game.PlayerX.Name ? "X" : "O";
 
         if (game.PlayerX.Name == playerName)
@@ -83,6 +89,7 @@ public class GameService : IGameService
         return game;
     }
 
+    // Get games waiting for second player
     public List<Game> GetAvailableGames()
     {
         return _context.Games
@@ -93,6 +100,7 @@ public class GameService : IGameService
             .ToList();
     }
 
+    // Get existing player or create new one
     private Player GetOrCreatePlayer(string name)
     {
         var player = _context.Players.FirstOrDefault(p => p.Name == name);
@@ -112,6 +120,7 @@ public class GameService : IGameService
         return player;
     }
 
+    // Get game by Id
     public Game GetGame(Guid gameId)
     {
         var game = _context.Games
@@ -119,8 +128,95 @@ public class GameService : IGameService
             .Include(g => g.PlayerO)
             .FirstOrDefault(g => g.Id == gameId);
 
+        // IMPORTANT: Ensure game exists
         if (game == null)
             throw new Exception("Game not found.");
+
+        return game;
+    }
+
+    // Top 10 players ranked by wins
+    public List<Player> GetTopPlayers()
+    {
+        return _context.Players
+            .OrderByDescending(p => p.Wins)
+            .ThenByDescending(p => p.TotalGames)
+            .Take(10)
+            .ToList();
+    }
+
+    // Finish game and update winner stats
+    public void FinishGame(Guid gameId, string winnerName)
+    {
+        var game = GetGame(gameId);
+
+        // IMPORTANT: Prevent double finishing
+        if (game.IsFinished)
+            return;
+
+        game.IsFinished = true;
+
+        var playerX = game.PlayerX;
+        var playerO = game.PlayerO;
+
+        if (playerX == null || playerO == null)
+            return;
+
+        playerX.TotalGames++;
+        playerO.TotalGames++;
+
+        if (playerX.Name == winnerName)
+        {
+            playerX.Wins++;
+            playerO.Losses++;
+            game.PlayerXScore++;
+        }
+        else
+        {
+            playerO.Wins++;
+            playerX.Losses++;
+            game.PlayerOScore++;
+        }
+
+        _context.SaveChanges();
+    }
+
+    // Finish game as draw
+    public void FinishDraw(Guid gameId)
+    {
+        var game = GetGame(gameId);
+
+        if (game.IsFinished)
+            return;
+
+        game.IsFinished = true;
+
+        var playerX = game.PlayerX;
+        var playerO = game.PlayerO;
+
+        if (playerX == null || playerO == null)
+            return;
+
+        playerX.TotalGames++;
+        playerO.TotalGames++;
+
+        playerX.Draws++;
+        playerO.Draws++;
+
+        _context.SaveChanges();
+    }
+
+    // Reset board for replay
+    public Game ResetGame(Guid gameId)
+    {
+        var game = GetGame(gameId);
+
+        game.Board = new string?[9];
+        game.IsFinished = false;
+
+        game.CurrentTurn = game.PlayerX.Name;
+
+        _context.SaveChanges();
 
         return game;
     }

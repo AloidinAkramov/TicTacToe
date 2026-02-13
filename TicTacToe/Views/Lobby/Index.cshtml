@@ -14,32 +14,38 @@
         </button>
     </form>
 
+    <a href="/Leaderboard" class="main-btn">
+        🏆 View Leaderboard
+    </a>
+
     <div class="games-list">
 
-        @if (!Model.Any())
-        {
-            <p class="no-game">No active games yet</p>
-        }
-        else
-        {
-            @foreach (var game in Model)
+        <div class="games-list">
+
+            @if (!Model.Any())
             {
-                <div class="game-item">
-
-                    <span class="player-name">
-                        👤 @game.PlayerX.Name
-                    </span>
-
-                    <form asp-action="Join" method="post">
-                        <input type="hidden" name="gameId" value="@game.Id" />
-                        <button type="submit" class="join-btn">
-                            Join Game
-                        </button>
-                    </form>
-
-                </div>
+                <p class="no-game">No active games yet</p>
             }
-        }
-    </div>
+            else
+            {
+                @foreach (var game in Model)
+                {
+                    <div class="game-item">
 
+                        <span class="player-name">
+                            👤 @game.PlayerX.Name
+                        </span>
+
+                        <form asp-action="Join" method="post">
+                            <input type="hidden" name="gameId" value="@game.Id" />
+                            <button type="submit" class="join-btn">
+                                Join Game
+                            </button>
+                        </form>
+
+                    </div>
+                }
+            }
+        </div>
+    </div>
 </div>

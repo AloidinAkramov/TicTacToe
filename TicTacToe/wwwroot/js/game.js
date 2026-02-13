@@ -40,9 +40,19 @@ connection.on("MoveMade", (board, currentTurn) => {
     }
 });
 
-connection.on("GameOver", (board, winCombo, winnerName) => {
+connection.on("GameOver", (board, winCombo, winnerName, playerXName, playerOName, xScore, oScore) => {
 
     updateBoard(board);
+
+    if (PLAYER_NAME === playerXName)
+    {
+        updateScore(xScore, oScore);
+    }
+    else
+    {
+        updateScore(oScore, xScore);
+    }
+
 
     winCombo.forEach(i => {
         cells[i].classList.add("win");
@@ -55,6 +65,8 @@ connection.on("GameOver", (board, winCombo, winnerName) => {
     }
 
     cells.forEach(c => c.disabled = true);
+
+    showRestartButton();
 });
 
 connection.on("GameDraw", (board) => {
@@ -62,6 +74,28 @@ connection.on("GameDraw", (board) => {
     updateBoard(board);
     statusDiv.innerText = "🤝 DRAW!";
     cells.forEach(c => c.disabled = true);
+
+    showRestartButton();
+});
+
+connection.on("GameRestarted", (board, currentTurn) => {
+
+    updateBoard(board);
+
+    cells.forEach(c => {
+        c.classList.remove("win");
+        c.disabled = false;
+    });
+
+    if (currentTurn === PLAYER_NAME) {
+        statusDiv.innerText = "Your turn";
+    } else {
+        statusDiv.innerText = "Opponent's turn";
+        cells.forEach(c => c.disabled = true);
+    }
+
+    const btn = document.getElementById("restartBtn");
+    if (btn) btn.remove();
 });
 
 function updateBoard(board) {
@@ -76,6 +110,7 @@ cells.forEach(cell => {
 
         if (cell.disabled) return;
 
+        // IMPORTANT: Send move to server via SignalR
         connection.invoke(
             "MakeMove",
             GAME_ID,
@@ -84,3 +119,26 @@ cells.forEach(cell => {
         );
     });
 });
+
+function showRestartButton() {
+
+    if (document.getElementById("restartBtn")) return;
+
+    const restartBtn = document.createElement("button");
+    restartBtn.id = "restartBtn";
+    restartBtn.innerText = "🔁 Play Again";
+    restartBtn.className = "game-btn";
+    restartBtn.style.marginTop = "20px";
+
+    restartBtn.onclick = () => {
+        connection.invoke("RestartGame", GAME_ID);
+    };
+
+    document.querySelector(".game-container")
+        .appendChild(restartBtn);
+}
+
+function updateScore(x, o) {
+    document.getElementById("playerXScore").innerText = x;
+    document.getElementById("playerOScore").innerText = o;
+}

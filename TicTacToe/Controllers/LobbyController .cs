@@ -1,24 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
-using TicTacToe.Hubs;
 using TicTacToe.Services;
 
 namespace TicTacToe.Controllers;
 public class LobbyController : Controller
 {
     private readonly IGameService _gameService;
-    private readonly IHubContext<GameHub> _hub;
 
-    public LobbyController(IGameService gameService, IHubContext<GameHub> hub)
+    public LobbyController(IGameService gameService)
     {
         _gameService = gameService;
-        _hub = hub;
     }
 
+    // Load lobby with available games
     public IActionResult Index()
     {
         var playerName = HttpContext.Session.GetString("PlayerName");
 
+        // IMPORTANT: Player must exist in session
         if (string.IsNullOrEmpty(playerName))
             return RedirectToAction("Index", "Home");
 
@@ -27,11 +25,11 @@ public class LobbyController : Controller
     }
 
     [HttpPost]
-    [IgnoreAntiforgeryToken]
     public IActionResult Create()
     {
         var playerName = HttpContext.Session.GetString("PlayerName");
 
+        // IMPORTANT: Prevent creating game without player
         if (string.IsNullOrEmpty(playerName))
             return RedirectToAction("Index", "Home");
 
@@ -41,11 +39,11 @@ public class LobbyController : Controller
     }
 
     [HttpPost]
-    [IgnoreAntiforgeryToken]
     public IActionResult Join(Guid gameId)
     {
         var playerName = HttpContext.Session.GetString("PlayerName");
 
+        // IMPORTANT: Prevent joining without session
         if (string.IsNullOrEmpty(playerName))
             return RedirectToAction("Index", "Home");
 
